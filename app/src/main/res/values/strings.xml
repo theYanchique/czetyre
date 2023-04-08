@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">czetyre</string>
+    <string name="login_text">Login</string>
+    <string name="password_text">Password</string>
+    <string name="submit_btn_text">Submit</string>
+    <string name="loginpass_text">LoginPass</string>
+</resources>
