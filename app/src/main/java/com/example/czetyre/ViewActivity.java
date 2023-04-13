@@ -12,10 +12,10 @@ public class ViewActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view);
-        TextView tv=findViewById(R.id.tvViewLoginPass);
+        TextView tv=findViewById(R.id.tvViewFullName);
         Intent intent=getIntent();
-        String login=intent.getStringExtra("login");
-        String pass=intent.getStringExtra("password");
-        tv.setText("Login:"+login+", Pass:"+pass);
+        //String login=intent.getStringExtra("login");
+        String full_name=intent.getStringExtra("full_name");
+        tv.setText("Ya tebya zapomnil, "+ full_name);
     }
 }
