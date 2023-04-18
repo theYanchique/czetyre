@@ -32,7 +32,7 @@ public class LoginActivity extends Activity implements View.OnClickListener, Get
     public void onClick(View v) {
         login=etLogin.getText().toString();
         password=etPass.getText().toString();
-        url_link="http://a0805137.xsph.ru/scriptUserProfile.php";
+        url_link="http://a0805137:ranisikafi@a0805137.xsph.ru/scriptUserProfile.php";
         new GetData(this).execute(login, password, url_link);
     }
     @Override
