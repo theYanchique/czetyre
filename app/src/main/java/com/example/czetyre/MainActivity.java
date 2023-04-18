@@ -2,21 +2,32 @@ package com.example.czetyre;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.czetyre.utils.PhotosUtils;
+
+import java.io.File;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private TextView tvFullUserName;
@@ -29,7 +40,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button btnGetContact;
     private Intent intentGetContact;
     private final static int REQUEST_CONTACT=1;
+    private final static int REQUEST_PHOTO=2;
     private static final String TAG= "MainActivity";
+    private ImageButton btnSelfPhoto;
+    private ImageView ivSelfPhoto;
+    private Intent intentGetPhoto;
+    private File selfPhotoFile;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,8 +67,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 btnGetContact=findViewById(R.id.btnGetContact);
                 btnGetContact.setOnClickListener(this);
             }
-
+        btnSelfPhoto=findViewById(R.id.btnSelfPhoto);
+        ivSelfPhoto=findViewById(R.id.ivSelfPhoto);
+        intentGetPhoto=new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        String photoFileName=getPhotoFileName();
+        selfPhotoFile=getPhotoFile(photoFileName);
+        boolean canTakePhoto=false;
+        canTakePhoto=selfPhotoFile!=null&&intentGetPhoto.resolveActivity(packageManager)!=null;
+        btnSelfPhoto.setEnabled(canTakePhoto);
+        if(canTakePhoto){
+           Uri uri= FileProvider.getUriForFile(this, "com.example.czetyre.fileprovider", selfPhotoFile);
+           intentGetPhoto.putExtra(MediaStore.EXTRA_OUTPUT,uri);
         }
+        btnSelfPhoto.setOnClickListener(this);
+        }
+    }
+    private String getPhotoFileName(){
+        Date date=new Date();
+        return "IMG+"+"18042023"+".jpg";
+    }
+    private File getPhotoFile(String fileName){
+        File filesDir=this.getFilesDir();
+        if(filesDir==null){
+            return null;
+        }
+        //TODO: insert check that file exists, in this case dont create new file
+        return new File(filesDir, fileName);
     }
 
     @Override
@@ -67,6 +107,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         if(view.getId()==btnGetContact.getId()){
             startActivityForResult(intentGetContact,REQUEST_CONTACT);
+        }
+        if(view.getId()==btnSelfPhoto.getId()){
+            startActivityForResult(intentGetPhoto, REQUEST_PHOTO);
         }
     }
 
@@ -83,7 +126,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent intent=new Intent(MainActivity.this, LoginActivity.class);
         startActivityForResult(intent, code);
     }
-
+    private void updateSelfPhotoImageView(File photoFile){
+        if(photoFile==null || !photoFile.exists()){
+            ivSelfPhoto.setImageDrawable(null);
+            Log.d(TAG, "updateSelfPhotoImageView: ERROR with file");
+        }else{
+            Point size=new Point();
+            this.getWindowManager().getDefaultDisplay().getSize(size);
+            Bitmap bitmap= PhotosUtils.getScaledBitmap(photoFile.getPath(),size.x,size.y);
+            ivSelfPhoto.setImageBitmap(bitmap);
+        }
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -121,6 +174,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         c.close();
                     }
                 }
+            }
+        }
+        if(requestCode==REQUEST_PHOTO){
+            if(resultCode==RESULT_OK){
+                updateSelfPhotoImageView(selfPhotoFile);
+            }else {
+                Log.d(TAG, "onActivityResult: ERROR with photo");
             }
         }
     }
